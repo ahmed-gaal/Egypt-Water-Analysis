@@ -29,9 +29,8 @@ color_scale = ['#E22126', '#669278', '#16161A', '#C74D4F', '#161729',
                '#465DAB', '#1E1F2E']
 
 
-fig = go.Figure()
-
-fig.add_trace(go.Indicator(
+fig_1 = go.Figure()
+fig_1.add_trace(go.Indicator(
     mode = "number+delta",
     value = df[df['Year'] == 2020].Transpiration_sum.mean(),
     title = {
@@ -43,9 +42,10 @@ fig.add_trace(go.Indicator(
         'reference': df[df['Year'] == 2019].Transpiration_sum.mean(),\
             'relative': True
     },
-    domain = {'x': [0, 0.5], 'y': [0.5, 0]}))
+   domain = {'x': [0.5, 0], 'y': [1, 0.5]}))
 
-fig.add_trace(go.Indicator(
+fig_2 = go.Figure()
+fig_2.add_trace(go.Indicator(
     mode = "number+delta",
     value = df[df['Year'] == 2020].Rainfall.mean(),
     title = {
@@ -57,9 +57,10 @@ fig.add_trace(go.Indicator(
         'reference': df[df['Year'] == 2019].Rainfall.mean(),\
             'relative': True
     },
-    domain = {'x': [0.5, 1], 'y': [0, 1]}))
+    domain = {'x': [0.5, 0], 'y': [1, 0.5]}))
 
-fig.add_trace(go.Indicator(
+fig_3 = go.Figure()
+fig_3.add_trace(go.Indicator(
     mode = "number+delta",
     value = df[df['Year'] == 2020].Evaporation_sum.mean(),
     title = {
@@ -99,12 +100,13 @@ layout = html.Div([
             #    }), width={'size': 6, 'offset': 4}), className='row'),
     ]),
     html.Hr(),
-    dbc.Row(
+    dbc.Row([
+
         dbc.Col(
             html.Div(
                 dcc.Graph(
                     id='Indicator',
-                    figure=fig,
+                    figure=fig_1,
                     animate=True,
                     responsive=True,
                     config={
@@ -112,9 +114,37 @@ layout = html.Div([
                         'displaylogo': False
                     }
                 )
-            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=12, xs=12, sm=12, md=12
-        ), className='row'
-    ),
+            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+        ),
+        dbc.Col(
+            html.Div(
+                dcc.Graph(
+                    id='Indicator1',
+                    figure=fig_2,
+                    animate=True,
+                    responsive=True,
+                    config={
+                        'showTips': True,
+                        'displaylogo': False
+                    }
+                )
+            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+        ),
+        dbc.Col(
+            html.Div(
+                dcc.Graph(
+                    id='Indicator2',
+                    figure=fig_3,
+                    animate=True,
+                    responsive=True,
+                    config={
+                        'showTips': True,
+                        'displaylogo': False
+                    }
+                )
+            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+        )
+    ], className='row'),
     html.Hr(),
     dbc.Row([
         dbc.Col(
@@ -243,7 +273,7 @@ def pie_chart(xaxis_column, yaxis_column, xaxis_type):
     dff = df[df['Year'] == xaxis_column]
     fig = dff.iplot(
         asFigure=True, kind='pie', labels='Month', values=yaxis_column,
-        hole=.65, theme='white',colors=color_scale, textposition='inside',
+        hole=.65, theme='white',colorscale='puor', textposition='inside',
         linecolor='black', textinfo='percent',
         title='Total  ' + str(yaxis_column) + '  per month for  '\
             + str(xaxis_column)
