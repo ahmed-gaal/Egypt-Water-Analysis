@@ -305,7 +305,7 @@ layout = html.Div([
                     config={
                         'displaylogo': False,
                         'showTips': True,
-                        'scrollZoom': True
+                        'scrollZoom': False
                     }
                 )
             ], style = {
@@ -493,7 +493,7 @@ def line_graph(xaxis_column, xaxis_type):
         asFigure=True, kind='scatter', x='Date', y=xaxis_column, mode='lines',
         interpolation='spline', bestfit=True, colors=color_scale,
         theme='white', gridcolor='white',
-        title='Total   ' + str(xaxis_column) + '   rate from 2009 to 2020'
+        title='Total  ' + str(xaxis_column) + ' Rate From 2009 to 2020'
     )
     fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
 
