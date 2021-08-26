@@ -19,6 +19,7 @@ df_irr = pd.read_parquet('data/irrigation.parquet')
 
 cols = df.columns
 irr_cols = df_irr.columns
+irr_area = ['Total Area', 'Groundwater Area', 'Surface Water Area', 'Percent area']
 cities = df_irr['Governorate'].unique()
 months = df['Month'].unique()
 years = df['Year'].unique()
@@ -310,7 +311,40 @@ layout = html.Div([
                 )
             ], style = {
                 'font-variant': 'small-caps', 'font-weight': 'bold'
-            }), width=12, xs=12, sm=12, md=12
+            }), width=6, xs=12, sm=12, md=6
+        ),
+        dbc.Col(
+            html.Div([
+                html.Div([
+                    dcc.Dropdown(
+                        id='xaxis-column5',
+                        options=[{
+                            'label': i, 'value': i
+                        } for i in irr_area],
+                        value='Total Area'
+                    ),
+                    dcc.RadioItems(
+                        id='xaxis-type5',
+                        labelStyle={
+                            'display': 'inline-block'
+                        }
+                    )
+                ], style={
+                    'width': '48%', 'display': 'inline-block',
+                    'color': 'black'
+                }),
+                
+            dcc.Graph(
+                id='barh-chart',
+                responsive=True,
+                config={
+                    'showTips': True,
+                    'displaylogo': False
+                }
+            )
+            ], style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }), width=6, xs=12, sm=12, md=6
         )
     ], className='row'),
     html.Hr(),
@@ -406,7 +440,6 @@ layout = html.Div([
         )
     ], className='row'),
 
-
 ])
 @app.callback(
     Output('sunburst', 'figure'),
@@ -462,6 +495,23 @@ def map_graph(xaxis_column, yaxis_column, xaxis_type):
                                 'Total Area': True, 'Longitude': False
                             }, width=550, height=550)
     fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
+
+    return fig
+
+
+@app.callback(
+    Output('barh-chart', 'figure'),
+    Input('xaxis-column5', 'value'),
+    Input('xaxis-type', 'value')
+)
+def barh_chart(xaxis_column, xaxis_type):
+    fig = df_irr.iplot(
+        asFigure=True, kind='bar',x='Governorate', y=xaxis_column,
+        theme='white', orientation='h', xTitle=str(xaxis_column),
+        yTitle='Governorate', subplots=True, subplot_titles=True,
+        gridcolor='white', colors=color_scale
+    )
+    fig.update_layout(margin={'l': 40, 'r': 40, 'b': 40, 't': 40})
 
     return fig
 
