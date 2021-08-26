@@ -64,6 +64,17 @@ layout = html.Div([
                         'font-family': 'Overpass, sans-serif',
                         'font-size': '150%', 'font-weight': 'normal'
                     }),
+
+                    html.P(children="The data used in the development of this\
+                                    web application was collected from the\
+                                    Climate Change Knowledge portal of the \
+                                    World Bank and The FAO portal to monitor\
+                                    Water Productivity through Open access of\
+                                    Remotely sensed derived data (WaPOR).",
+                    style={
+                        'font-family': 'Overpass, sans-serif',
+                        'font-size': '150%', 'font-weight': 'normal'
+                    }), 
                     html.P(children='This dashboard will reveal insights on\
                                 the water resources available, the effects of\
                                 weather in the context of water consumption,\
@@ -76,6 +87,5 @@ layout = html.Div([
                 ])
             )
         ]),
-        html.Hr()
     ])
 ])
