@@ -10,21 +10,32 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-from datetime import datetime, timezone
 from app import app
 
 # Load data to a pandas DataFrame
 df = pd.read_parquet('data/rain-wapor.parquet')
 df_irr = pd.read_parquet('data/irrigation.parquet')
 
-cols = df.columns
-irr_cols = df_irr.columns
-irr_area = ['Total Area', 'Groundwater Area', 'Surface Water Area', 'Percent area']
-cities = df_irr['Governorate'].unique()
+# Data Cleaning
+df.rename(columns={
+    'Transpiration_sum': 'Transpiration',
+    'NPP_sum': 'Net Primary Production',
+    'GWP_mean': 'Gross Water Productivity',
+    'Evaporation_sum': 'Evaporation',
+    'ETI_sum': 'ETI',
+    'RET_sum': 'EvapoTranspiration'
+}, inplace=True)
+
+
+cols = ['Transpiration', 'Net Primary Production', 'Gross Water Productivity',
+        'Evaporation', 'ETI', 'EvapoTranspiration', 'Rainfall', 'Temperature(C)',
+        'MinTemp(C)', 'MaxTemp(C)']
+
+irr_cols = [
+    'Total Area', 'Groundwater Area', 'Surface Water Area', 'Percent area'
+]
 months = df['Month'].unique()
 years = df['Year'].unique()
-now = datetime.now(timezone.utc)
-current_month = now.strftime('%B')
 
 # Set custom color scale
 color_scale = ['#E22126', '#669278', '#16161A', '#C74D4F', '#161729',
@@ -36,14 +47,14 @@ color_scale = ['#E22126', '#669278', '#16161A', '#C74D4F', '#161729',
 fig_1 = go.Figure()
 fig_1.add_trace(go.Indicator(
     mode = "number+delta",
-    value = df[df['Year'] == 2020].Transpiration_sum.mean(),
+    value = df[df['Year'] == 2020].Transpiration.mean(),
     title = {
         "text": "Transpiration<br><span style='font-size\
                 :0.8em;color:gray'>in</span><br><span style='font-size\
-                :0.8em;color:gray'>mm/day</span>"
+                :0.8em;color:gray'>mm/month</span>"
     },
     delta = {
-        'reference': df[df['Year'] == 2019].Transpiration_sum.mean(),\
+        'reference': df[df['Year'] == 2019].Transpiration.mean(),\
             'relative': True
     },
    domain = {'x': [0.5, 0], 'y': [1, 0.5]}))
@@ -51,14 +62,15 @@ fig_1.add_trace(go.Indicator(
 fig_2 = go.Figure()
 fig_2.add_trace(go.Indicator(
     mode = "number+delta",
-    value = df[df['Year'] == 2020].Rainfall.mean(),
+    value = df[df['Year'] == 2020].ETI.mean(),
     title = {
-        "text": "Rainfall<br><span style='font-size:0.8em;\
+        "text": "Actual EvapoTranspiration & Interception<br><span\
+                style='font-size:0.8em;\
                 color:gray'>in</span><br><span style='font-size\
-                :0.8em;color:gray'>mm/day</span>"
+                :0.8em;color:gray'>mm/month</span>"
     },
     delta = {
-        'reference': df[df['Year'] == 2019].Rainfall.mean(),\
+        'reference': df[df['Year'] == 2019].ETI.mean(),\
             'relative': True
     },
     domain = {'x': [0.5, 0], 'y': [1, 0.5]}))
@@ -66,14 +78,14 @@ fig_2.add_trace(go.Indicator(
 fig_3 = go.Figure()
 fig_3.add_trace(go.Indicator(
     mode = "number+delta",
-    value = df[df['Year'] == 2020].Evaporation_sum.mean(),
+    value = df[df['Year'] == 2020].Evaporation.mean(),
     title = {
         "text": "Evaporation<br><span \
                 style='font-size:0.8em ;color:gray'>in</span><br><span\
-                style='font-size:0.8em ;color:gray'>mm/day</span>"
+                style='font-size:0.8em ;color:gray'>mm/month</span>"
     },
     delta = {
-        'reference': df[df['Year'] == 2019].Evaporation_sum.mean(),\
+        'reference': df[df['Year'] == 2019].Evaporation.mean(),\
             'relative': True
     },
     domain = {'x': [0.5, 0], 'y': [1, 0.5]}))
@@ -113,7 +125,9 @@ layout = html.Div([
                         'displaylogo': False
                     }
                 )
-            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+            ), style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }, width=4, xs=12, sm=12, md=4
         ),
         dbc.Col(
             html.Div(
@@ -127,7 +141,9 @@ layout = html.Div([
                         'displaylogo': False
                     }
                 )
-            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+            ), style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }, width=4, xs=12, sm=12, md=4
         ),
         dbc.Col(
             html.Div(
@@ -141,7 +157,9 @@ layout = html.Div([
                         'displaylogo': False
                     }
                 )
-            ), style={'font-variant': 'small-caps', 'font-weight': 'bold'}, width=4, xs=12, sm=12, md=4
+            ), style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }, width=4, xs=12, sm=12, md=4
         )
     ], className='row'),
     html.Hr(),
@@ -149,7 +167,7 @@ layout = html.Div([
         dbc.Row(
             dbc.Col(
                 html.H1(
-                    'Average Water Consumption as at 2020',
+                    'Explore Egypt WaPOR Data',
                     className='text-center'
                 ), className='mb-4 mt-5'
             ))
@@ -165,7 +183,7 @@ layout = html.Div([
                         options=[{
                             'label': i, 'value': i
                         } for i in cols],
-                        value='Transpiration_sum'
+                        value='Transpiration'
                     ),
                     dcc.RadioItems(
                         id='xaxis-type',
@@ -254,17 +272,7 @@ layout = html.Div([
         )
     ], className='row'),
     html.Hr(),
-    dbc.Container([
-        dbc.Row(
-            dbc.Col(
-                html.H1(
-                    'Average Water Consumption as at 2020',
-                    className='text-center'
-                ), className='mb-4 mt-5'
-            ))
-    ]),
     html.Hr(),
-    
     dbc.Row([
         dbc.Col(
             html.Div([
@@ -273,8 +281,8 @@ layout = html.Div([
                         id='xaxis-column2',
                         options=[{
                             'label': i, 'value': i
-                        } for i in irr_cols],
-                        value='Total Area'
+                        } for i in cols],
+                        value='Transpiration'
                     ),
                     dcc.RadioItems(
                         id='xaxis-type2',
@@ -289,11 +297,104 @@ layout = html.Div([
                         id='yaxis-column2',
                         options=[{
                             'label': i, 'value': i
+                        } for i in cols],
+                        value='Temperature(C)'
+                    ),
+                    dcc.RadioItems(
+                        id='yaxis-type2',
+                        labelStyle={'display': 'inline-block'}
+                    )
+                ], style={
+                    'width': '48%', 'display': 'inline-block',
+                    'color': 'black'
+                }),
+            dcc.Graph(
+                id='bar-chart',
+                responsive=True,
+                config={
+                    'showTips': True,
+                    'displaylogo': False
+                }
+            )
+            ], style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }), width=6, xs=12, sm=12, md=6
+        ),
+        dbc.Col(
+            html.Div([
+                html.Div([
+                    dcc.Dropdown(
+                        id='xaxis-column3',
+                        options=[{
+                            'label': i, 'value': i
+                        } for i in cols],
+                        value='Rainfall'
+                    ),
+                    dcc.RadioItems(
+                        id='xaxis-type3',
+                        labelStyle={
+                            'display': 'inline-block'
+                        }
+                    )
+                ], style={
+                    'width': '48%', 'display': 'inline-block',
+                    'color': 'black'
+                }),
+                
+            dcc.Graph(
+                id='line-chart',
+                responsive=True,
+                config={
+                    'showTips': True,
+                    'displaylogo': False
+                }
+            )
+            ], style={
+                'font-variant': 'small-caps', 'font-weight': 'bold'
+            }), width=6, xs=12, sm=12, md=6
+        )
+    ], className='row'),
+
+    html.Hr(),
+    dbc.Container([
+        dbc.Row(
+            dbc.Col(
+                html.H1(
+                    'Area of land used for Irrigation',
+                    className='text-center'
+                ), className='mb-4 mt-5'
+            ))
+    ]),
+    html.Hr(),    
+    dbc.Row([
+        dbc.Col(
+            html.Div([
+                html.Div([
+                    dcc.Dropdown(
+                        id='xaxis-column4',
+                        options=[{
+                            'label': i, 'value': i
+                        } for i in irr_cols],
+                        value='Total Area'
+                    ),
+                    dcc.RadioItems(
+                        id='xaxis-type4',
+                        labelStyle={'display': 'inline-block'}
+                    )
+                ], style={
+                    'width': '48%', 'display': 'inline-block',
+                    'color': 'black'
+                }),
+                html.Div([
+                    dcc.Dropdown(
+                        id='yaxis-column4',
+                        options=[{
+                            'label': i, 'value': i
                         } for i in irr_cols],
                         value='Percent area'
                     ),
                     dcc.RadioItems(
-                        id='yaxis-type2',
+                        id='yaxis-type4',
                         labelStyle={'display': 'inline-block'}
                     )
                 ], style={
@@ -320,7 +421,7 @@ layout = html.Div([
                         id='xaxis-column5',
                         options=[{
                             'label': i, 'value': i
-                        } for i in irr_area],
+                        } for i in irr_cols],
                         value='Total Area'
                     ),
                     dcc.RadioItems(
@@ -336,98 +437,6 @@ layout = html.Div([
                 
             dcc.Graph(
                 id='barh-chart',
-                responsive=True,
-                config={
-                    'showTips': True,
-                    'displaylogo': False
-                }
-            )
-            ], style={
-                'font-variant': 'small-caps', 'font-weight': 'bold'
-            }), width=6, xs=12, sm=12, md=6
-        )
-    ], className='row'),
-    html.Hr(),
-    dbc.Container([
-        dbc.Row(
-            dbc.Col(
-                html.H1(
-                    'Average Water Consumption as at 2020',
-                    className='text-center'
-                ), className='mb-4 mt-5'
-            ))
-    ]),
-    html.Hr(),
-    dbc.Row([
-        dbc.Col(
-            html.Div([
-                html.Div([
-                    dcc.Dropdown(
-                        id='xaxis-column3',
-                        options=[{
-                            'label': i, 'value': i
-                        } for i in cols],
-                        value='Transpiration_sum'
-                    ),
-                    dcc.RadioItems(
-                        id='xaxis-type3',
-                        labelStyle={'display': 'inline-block'}
-                    )
-                ], style={
-                    'width': '48%', 'display': 'inline-block',
-                    'color': 'black'
-                }),
-                html.Div([
-                    dcc.Dropdown(
-                        id='yaxis-column3',
-                        options=[{
-                            'label': i, 'value': i
-                        } for i in cols],
-                        value='Temperature(C)'
-                    ),
-                    dcc.RadioItems(
-                        id='yaxis-type3',
-                        labelStyle={'display': 'inline-block'}
-                    )
-                ], style={
-                    'width': '48%', 'display': 'inline-block',
-                    'color': 'black'
-                }),
-            dcc.Graph(
-                id='bar-chart',
-                responsive=True,
-                config={
-                    'showTips': True,
-                    'displaylogo': False
-                }
-            )
-            ], style={
-                'font-variant': 'small-caps', 'font-weight': 'bold'
-            }), width=6, xs=12, sm=12, md=6
-        ),
-        dbc.Col(
-            html.Div([
-                html.Div([
-                    dcc.Dropdown(
-                        id='xaxis-column4',
-                        options=[{
-                            'label': i, 'value': i
-                        } for i in cols],
-                        value='Rainfall'
-                    ),
-                    dcc.RadioItems(
-                        id='xaxis-type4',
-                        labelStyle={
-                            'display': 'inline-block'
-                        }
-                    )
-                ], style={
-                    'width': '48%', 'display': 'inline-block',
-                    'color': 'black'
-                }),
-                
-            dcc.Graph(
-                id='line-chart',
                 responsive=True,
                 config={
                     'showTips': True,
@@ -479,10 +488,44 @@ def pie_chart(xaxis_column, yaxis_column, xaxis_type):
 
 
 @app.callback(
-    Output('map-graph', 'figure'),
+    Output('bar-chart', 'figure'),
     Input('xaxis-column2', 'value'),
     Input('yaxis-column2', 'value'),
     Input('xaxis-type2', 'value')
+)
+def bar_graph(xaxis_column, yaxis_column, xaxis_type):
+    fig = df.iplot(
+        asFigure=True, kind='bar', x='Date', y=[xaxis_column, yaxis_column],
+        barmode='stack', bestfit=False, colors=color_scale, theme='white',
+        gridcolor='white', subplots=True, subplot_titles=True
+    )
+    fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
+
+    return fig
+
+
+@app.callback(
+    Output('line-chart', 'figure'),
+    Input('xaxis-column3', 'value'),
+    Input('xaxis-column3', 'value')
+)
+def line_graph(xaxis_column, xaxis_type):
+    fig = df.iplot(
+        asFigure=True, kind='scatter', x='Date', y=xaxis_column, mode='lines',
+        interpolation='spline', bestfit=True, colors=color_scale,
+        theme='white', gridcolor='white',
+        title='Total  ' + str(xaxis_column) + ' Rate From 2009 to 2020'
+    )
+    fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
+
+    return fig
+
+
+@app.callback(
+    Output('map-graph', 'figure'),
+    Input('xaxis-column4', 'value'),
+    Input('yaxis-column4', 'value'),
+    Input('xaxis-type4', 'value')
 )
 def map_graph(xaxis_column, yaxis_column, xaxis_type):
     fig = px.scatter_mapbox(df_irr, lat='Latitude', lon='Longitude',
@@ -502,7 +545,7 @@ def map_graph(xaxis_column, yaxis_column, xaxis_type):
 @app.callback(
     Output('barh-chart', 'figure'),
     Input('xaxis-column5', 'value'),
-    Input('xaxis-type', 'value')
+    Input('xaxis-type5', 'value')
 )
 def barh_chart(xaxis_column, xaxis_type):
     fig = df_irr.iplot(
@@ -512,40 +555,6 @@ def barh_chart(xaxis_column, xaxis_type):
         gridcolor='white', colors=color_scale
     )
     fig.update_layout(margin={'l': 40, 'r': 40, 'b': 40, 't': 40})
-
-    return fig
-
-
-@app.callback(
-    Output('bar-chart', 'figure'),
-    Input('xaxis-column3', 'value'),
-    Input('yaxis-column3', 'value'),
-    Input('xaxis-type3', 'value')
-)
-def bar_graph(xaxis_column, yaxis_column, xaxis_type):
-    fig = df.iplot(
-        asFigure=True, kind='bar', x='Date', y=[xaxis_column, yaxis_column],
-        barmode='stack', bestfit=False, colors=color_scale, theme='white',
-        gridcolor='white', subplots=True, subplot_titles=True
-    )
-    fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
-
-    return fig
-
-
-@app.callback(
-    Output('line-chart', 'figure'),
-    Input('xaxis-column4', 'value'),
-    Input('xaxis-column4', 'value')
-)
-def line_graph(xaxis_column, xaxis_type):
-    fig = df.iplot(
-        asFigure=True, kind='scatter', x='Date', y=xaxis_column, mode='lines',
-        interpolation='spline', bestfit=True, colors=color_scale,
-        theme='white', gridcolor='white',
-        title='Total  ' + str(xaxis_column) + ' Rate From 2009 to 2020'
-    )
-    fig.update_layout(margin={'l': 40, 'b': 40, 't': 40, 'r': 40})
 
     return fig
 
