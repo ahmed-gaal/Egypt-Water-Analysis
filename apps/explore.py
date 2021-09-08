@@ -457,7 +457,7 @@ layout = html.Div([
     Input('xaxis-type', 'value')
 )
 def sunburst_graph(xaxis_column, yaxis_column, xaxis_type):
-    fig = px.sunburst(df, path=['Month', 'Year'], values=xaxis_column, 
+    fig = px.sunburst(df, path=['Year', 'Month'], values=xaxis_column, 
                       color=yaxis_column, template='seaborn',
                       color_continuous_scale='jet',
                       title='Explore  ' + str(xaxis_column) + ' &  ' \
