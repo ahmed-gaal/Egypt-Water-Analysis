@@ -49,7 +49,7 @@ layout = html.Div([
                                     faces water scarcity, 98.4 million\
                                     Egyptians still live under the water\
                                     poverty line by 50 percent, below the \
-                                    international line of 1,000 m3.\
+                                    international line of 1,000㎥.\
                                     The danger of the water crisis in Egypt\
                                     increased with the presence of regional\
                                     conflicts over the water of the Nile River.',
